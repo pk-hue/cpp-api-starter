@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Integração de C++ com Postgresql</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        input, button { padding: 0.5rem; font-size: 1rem; }
+        .resultado { margin-top: 1rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Consulta no banco de dados de filmes</h2>
+    <input type="text" name="consulta" id="documento" placeholder="Digite o nome do filme">
+    <button onclick="consulta()">Consultar</button>
+
+    <div class="resultado" id="resultado"></div>
+
+    <script>
+        async function consulta() {
+            const doc = document.getElementById("documento").value;
+            const resultado = document.getElementById("resultado");
+
+            try{
+                const resposta = await fetch("http://localhost:8080/select", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({documento: doc}),
+                });
+
+                const dados = await resposta.json();
+
+                if(resposta.ok){
+                    resultado.innerHTML = "";
+                    if(Array.isArray(dados)){
+                        dados.forEach(dado => {
+                            const div = document.createElement("div");
+                            div.textContent = `Título: ${dado.titulo} | Gênero: ${dado.genero} | Lançamento: ${dado.lancamento}`;
+                            resultado.appendChild(div);
+                        });
+                    }else{
+                        resultado.innerHTML = "Nenhum resultados existente";
+                    }
+                    console.log(dados);
+
+                }else{
+                    resultado.innerHTML = dados.err || "Erro ao mostrar resultado.";
+                    console.log(dados);
+                }
+
+            }catch(error){
+                resultado.innerHTML = error;
+            }
+
+        }
+    </script>
+</body>
+</html>
